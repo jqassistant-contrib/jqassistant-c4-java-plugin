@@ -1,0 +1,57 @@
+<jqa:jqassistant-rules xmlns:jqa="http://www.buschmais.com/jqassistant/core/rule/schema/v1.3">
+
+    <concept id="c4-java:ComponentDependency">
+        <requiresConcept refId="c4-java:Component" />
+        <description>Creates a relation 'DEPENDS_ON_COMPONENT' with a weight attribute between two C4 components if there are type dependencies between them.</description>
+        <cypher><![CDATA[
+            MATCH
+              shortestPath((component1:C4:Component)-[:CONTAINS*]->(type1:Type)),
+              shortestPath((component2:C4:Component)-[:CONTAINS*]->(type2:Type)),
+              (type1)-[typeDependsOn:DEPENDS_ON]->(type2)
+            WHERE
+              component1 <> component2
+            WITH
+              component1, component2, count(typeDependsOn) as weight
+            MERGE
+              (component1)-[dependsOnComponent:DEPENDS_ON_COMPONENT]->(component2)
+            SET
+              dependsOnComponent.weight = weight
+            RETURN
+              component1 as Dependent, collect(component2) as Dependencies
+        ]]></cypher>
+    </concept>
+
+    <concept id="c4-java:ComponentDependency.graphml">
+        <requiresConcept refId="c4-java:ComponentDependency" />
+        <description>Creates a GraphML representation of C4 components and their dependencies.</description>
+        <cypher><![CDATA[
+            MATCH
+              (component:C4:Component)
+            OPTIONAL MATCH
+              (component)-[dependsOn:DEPENDS_ON_COMPONENT]->(:C4:Component)
+            RETURN
+              *
+        ]]></cypher>
+    </concept>
+
+    <constraint id="c4-java:UndefinedComponentDependency">
+        <requiresConcept refId="c4-java:ComponentDependency" />
+        <requiresConcept refId="c4-java:DefinedComponentDependency" />
+        <description>Creates a relation 'DEPENDS_ON_COMPONENT' with a weight attribute between two C4 components if there are type dependencies between them.</description>
+        <cypher><![CDATA[
+            MATCH
+              (component1:C4:Component)-[:DEPENDS_ON_COMPONENT]->(component2:C4:Component)
+            WHERE NOT
+              (component1)-[:DEFINES_COMPONENT_DEPENDENCY]->(component2)
+            WITH
+              component1, component2
+            MATCH
+              shortestPath((component1)-[:CONTAINS*]->(type1)),
+              shortestPath((component2)-[:CONTAINS*]->(type2)),
+              (type1)-[:DEPENDS_ON]->(type2)
+            RETURN
+              component1 as Dependent, type1 as DependentType, component2 as UndefinedDependency, type2 as UndefinedTypeDependency
+        ]]></cypher>
+    </constraint>
+
+</jqa:jqassistant-rules>

@@ -1,0 +1,36 @@
+<jqa:jqassistant-rules xmlns:jqa="http://www.buschmais.com/jqassistant/core/rule/schema/v1.3">
+
+    <concept id="c4-java:Component">
+        <description>Defines the C4 components for the test.</description>
+        <cypher><![CDATA[
+            MATCH
+              (component:Package)
+            WHERE
+              component.name in [
+                "component1",
+                "component2",
+                "component3"
+              ]
+            SET
+              component:C4:Component
+            RETURN
+              component as Component
+        ]]></cypher>
+    </concept>
+
+    <concept id="c4-java:DefinedComponentDependency">
+        <description>Defines the allowed dependencies between C4 components for the test.</description>
+        <cypher><![CDATA[
+            MATCH
+              (component1:Component{name:"component1"}),
+              (component2:Component{name:"component2"}),
+              (component3:Component{name:"component3"})
+            CREATE UNIQUE
+              (component2)-[c2c1:DEFINES_COMPONENT_DEPENDENCY]->(component1),
+              (component3)-[c3c2:DEFINES_COMPONENT_DEPENDENCY]->(component2)
+            RETURN
+              *
+        ]]></cypher>
+    </concept>
+
+</jqa:jqassistant-rules>
