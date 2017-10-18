@@ -27,6 +27,7 @@
               (component3:Component{name:"component3"})
             CREATE UNIQUE
               (component2)-[c2c1:DEFINES_COMPONENT_DEPENDENCY]->(component1),
+              (component3)-[c3c1:DEFINES_COMPONENT_DEPENDENCY]->(component1),
               (component3)-[c3c2:DEFINES_COMPONENT_DEPENDENCY]->(component2)
             RETURN
               *

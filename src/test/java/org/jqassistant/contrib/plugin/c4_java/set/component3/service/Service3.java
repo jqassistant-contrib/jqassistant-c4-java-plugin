@@ -1,5 +1,4 @@
 package org.jqassistant.contrib.plugin.c4_java.set.component3.service;
 
-public class Service3 {
-
+public interface Service3 {
 }

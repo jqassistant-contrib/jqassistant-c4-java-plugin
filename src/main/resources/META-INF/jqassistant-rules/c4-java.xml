@@ -17,7 +17,7 @@
             SET
               dependsOnComponent.weight = weight
             RETURN
-              component1 as Dependent, collect(component2) as Dependencies
+              component1 as Component, collect(component2) as Dependencies
         ]]></cypher>
     </concept>
 
@@ -31,6 +31,25 @@
               (component)-[dependsOn:DEPENDS_ON_COMPONENT]->(:C4:Component)
             RETURN
               *
+        ]]></cypher>
+    </concept>
+
+    <concept id="c4-java:ComponentExposesClass">
+        <requiresConcept refId="c4-java:ComponentDependency" />
+        <description>Creates a GraphML representation of C4 components and their dependencies.</description>
+        <cypher><![CDATA[
+            MATCH
+              (component1:C4:Component)-[:DEPENDS_ON_COMPONENT]->(component2:C4:Component)
+            WITH
+              component1, component2
+            MATCH
+              shortestPath((component1)-[:CONTAINS*]->(type1:Type)),
+              shortestPath((component2)-[:CONTAINS*]->(type2:Type)),
+              (type1)-[:DEPENDS_ON]->(type2)
+            MERGE
+              (component2)-[:EXPOSES_CLASS]->(type2)
+            RETURN
+              component2 as Component, collect(distinct type2) as ExposedClasses
         ]]></cypher>
     </concept>
 
